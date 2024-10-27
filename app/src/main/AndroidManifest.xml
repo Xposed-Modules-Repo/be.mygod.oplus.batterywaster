@@ -10,7 +10,7 @@
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Disable battery saving features that hurt user experience" />
+            android:value="Disable OnePlus battery saving features that hurt user experience" />
         <meta-data
             android:name="xposedminversion"
             android:value="82" />
