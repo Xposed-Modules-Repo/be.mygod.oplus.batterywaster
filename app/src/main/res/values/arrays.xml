@@ -2,6 +2,7 @@
 <resources>
     <string-array name="module_scope" translatable="false">
         <item>android</item>
+        <item>com.android.settings</item>
         <item>com.oplus.battery</item>
     </string-array>
 </resources>
