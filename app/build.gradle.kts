@@ -3,14 +3,14 @@ plugins {
 }
 
 android {
-    namespace = "be.mygod.batterywaster"
+    namespace = "be.mygod.oplus.batterywaster"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 21
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "0.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
