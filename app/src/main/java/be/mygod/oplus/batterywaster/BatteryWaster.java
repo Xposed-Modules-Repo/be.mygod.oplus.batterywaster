@@ -52,6 +52,17 @@ public class BatteryWaster implements IXposedHookLoadPackage {
                 param.setResult(handleClick.bindTo(param.thisObject).invokeWithArguments(param.args[0]));
             }
         });
+
+        var notificationController = XposedHelpers.findClass(
+                "com.android.settings.notification.app.NotificationPreferenceController", lpparam.classLoader);
+        var setOverrideCanConfigure = notificationController.getDeclaredMethod(
+                "setOverrideCanConfigure", boolean.class);
+        XposedBridge.hookAllConstructors(notificationController, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                setOverrideCanConfigure.invoke(param.thisObject, true);
+            }
+        });
     }
     private void bypassSettingsActivityPlugin(XC_LoadPackage.LoadPackageParam lpparam, String subsetting) {
         var thread = XposedHelpers.findClass("com.oplus.settings.SettingsActivityPlugin$" + subsetting,
