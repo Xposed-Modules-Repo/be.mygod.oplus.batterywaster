@@ -1,8 +1,5 @@
 package be.mygod.oplus.batterywaster;
 
-import android.content.Intent;
-import android.os.BatteryManager;
-
 import java.lang.invoke.MethodHandles;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -73,21 +70,12 @@ public class BatteryWaster implements IXposedHookLoadPackage {
     }
 
     private void handleOplusBattery(XC_LoadPackage.LoadPackageParam lpparam) {
-        var thread = XposedHelpers.findClass("android.app.ActivityThread$ApplicationThread", lpparam.classLoader);
-        for (var method : thread.getDeclaredMethods()) if (method.getName().equals("scheduleRegisteredReceiver")) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length >= 2 && parameterTypes[1].equals(Intent.class)) {
-                XposedBridge.hookMethod(method, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) {
-                        var intent = (Intent) param.args[1];
-                        if (!Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) return;
-                        intent.removeExtra(BatteryManager.EXTRA_TEMPERATURE);
-                    }
-                });
-                return;
+        XposedHelpers.findAndHookMethod("com.oplus.thermalcontrol.ThermalControlConfig", lpparam.classLoader,
+                "isThermalControlEnable", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                param.setResult(false);
             }
-        }
-        throw new NoSuchMethodError("android.app.ActivityThread$ApplicationThread.scheduleRegisteredReceiver");
+        });
     }
 }
