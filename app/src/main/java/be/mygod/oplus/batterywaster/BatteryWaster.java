@@ -1,5 +1,7 @@
 package be.mygod.oplus.batterywaster;
 
+import android.app.NotificationChannel;
+
 import java.lang.invoke.MethodHandles;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -24,12 +26,20 @@ public class BatteryWaster implements IXposedHookLoadPackage {
         }
     }
 
-    private void handleAndroid(XC_LoadPackage.LoadPackageParam lpparam) {
+    private void handleAndroid(XC_LoadPackage.LoadPackageParam lpparam) throws NoSuchMethodException {
         XposedHelpers.findAndHookMethod("com.android.server.am.OplusAppStartupManager", lpparam.classLoader,
                 "handleStrictModeChange", boolean.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 param.args[0] = false;  // disable strict mode always
+            }
+        });
+
+        XposedBridge.hookMethod(NotificationChannel.class.getDeclaredMethod(
+                "isImportanceLockedByCriticalDeviceFunction"), new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                param.setResult(false);
             }
         });
     }
