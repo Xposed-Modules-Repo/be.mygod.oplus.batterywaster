@@ -2,6 +2,8 @@ package be.mygod.oplus.batterywaster;
 
 import android.app.NotificationChannel;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import java.lang.invoke.MethodHandles;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -91,6 +93,20 @@ public class BatteryWaster implements IXposedHookLoadPackage {
     }
 
     private void handleOplusBattery(XC_LoadPackage.LoadPackageParam lpparam) {
+        XposedHelpers.findAndHookMethod("com.android.org.kxml2.io.KXmlParser", lpparam.classLoader, "nextText",
+                new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                var parser = (XmlPullParser) param.thisObject;
+                switch (parser.getName()) {
+                    case "HighTemperatureFirstStepSwitch":
+                    case "HighTemperatureProtectSwitch":
+                    case "HighTemperatureShutdownSwitch":
+                        param.setResult("false");
+                        break;
+                }
+            }
+        });
         XposedHelpers.findAndHookMethod("com.oplus.thermalcontrol.ThermalControlConfig", lpparam.classLoader,
                 "isThermalControlEnable", new XC_MethodHook() {
             @Override
