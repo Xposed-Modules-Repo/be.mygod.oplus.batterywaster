@@ -98,5 +98,12 @@ public class BatteryWaster implements IXposedHookLoadPackage {
                 param.setResult(false);
             }
         });
+        XposedHelpers.findAndHookMethod("com.oplus.thermalcontrol.ThermalControllerCenter", lpparam.classLoader,
+                "isSafetyStateExcludedScene", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                param.setResult(true);
+            }
+        });
     }
 }
