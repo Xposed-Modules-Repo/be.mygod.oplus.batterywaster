@@ -37,6 +37,14 @@ public class BatteryWaster implements IXposedHookLoadPackage {
             }
         });
 
+        XposedHelpers.findAndHookMethod("com.android.server.notification.OplusNotificationManagerServiceExtImpl$NotificationUidObserver",
+                lpparam.classLoader, "onUidGone", int.class, boolean.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                param.setResult(null);
+            }
+        });
+
         XposedBridge.hookMethod(NotificationChannel.class.getDeclaredMethod(
                 "isImportanceLockedByCriticalDeviceFunction"), new XC_MethodHook() {
             @Override
