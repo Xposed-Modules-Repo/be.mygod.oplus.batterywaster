@@ -1,10 +1,15 @@
 package be.mygod.oplus.batterywaster;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
+import android.os.Binder;
+import android.os.Process;
 
 import org.xmlpull.v1.XmlPullParser;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
+import java.util.Locale;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -28,6 +33,7 @@ public class BatteryWaster implements IXposedHookLoadPackage {
         }
     }
 
+    @SuppressLint("BlockedPrivateApi")
     private void handleAndroid(XC_LoadPackage.LoadPackageParam lpparam) throws NoSuchMethodException {
         XposedHelpers.findAndHookMethod("com.android.server.am.OplusAppStartupManager", lpparam.classLoader,
                 "handleStrictModeChange", boolean.class, new XC_MethodHook() {
@@ -37,13 +43,47 @@ public class BatteryWaster implements IXposedHookLoadPackage {
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.android.server.notification.OplusNotificationManagerServiceExtImpl$NotificationUidObserver",
+        XposedHelpers.findAndHookMethod(
+                "com.android.server.notification.OplusNotificationManagerServiceExtImpl$NotificationUidObserver",
                 lpparam.classLoader, "onUidGone", int.class, boolean.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 param.setResult(null);
             }
         });
+
+        var logOffender = new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                var pid = Binder.getCallingPid();
+                if (Process.myPid() == pid) {
+                    var log = new StringBuilder();
+                    log.append("Dangerous method ");
+                    log.append(param.method.getName());
+                    log.append("(");
+                    log.append(Arrays.deepToString(param.args));
+                    log.append(") denied\n");
+                    var stack = Thread.currentThread().getStackTrace();
+                    for (StackTraceElement element : stack) {
+                        log.append(element.toString());
+                        log.append('\n');
+                    }
+                    XposedBridge.log(log.toString());
+                } else XposedBridge.log(String.format(Locale.ENGLISH,
+                        "Dangerous method %s(%s) denied from uid=%d, pid=%d", param.method.getName(),
+                        Arrays.deepToString(param.args), Binder.getCallingUid(), pid));
+                param.setResult(null);
+            }
+        };
+        for (var method : XposedHelpers.findClass(
+                "com.android.server.notification.OplusNotificationManagerServiceExtImpl",
+                lpparam.classLoader).getDeclaredMethods()) switch (method.getName()) {
+            case "cancelAllLocked":
+            case "cancelAllNotificationsInt":
+            case "onClearAllNotifications":
+                XposedBridge.hookMethod(method, logOffender);
+                break;
+        }
 
         XposedBridge.hookMethod(NotificationChannel.class.getDeclaredMethod(
                 "isImportanceLockedByCriticalDeviceFunction"), new XC_MethodHook() {
@@ -85,10 +125,9 @@ public class BatteryWaster implements IXposedHookLoadPackage {
         });
     }
     private void bypassSettingsActivityPlugin(XC_LoadPackage.LoadPackageParam lpparam, String subsetting) {
-        var thread = XposedHelpers.findClass("com.oplus.settings.SettingsActivityPlugin$" + subsetting,
-                lpparam.classLoader);
-        for (var method : thread.getDeclaredMethods()) if (method.getName().equals("onCreate") &&
-                method.getReturnType() == void.class) {
+        for (var method : XposedHelpers.findClass("com.oplus.settings.SettingsActivityPlugin$" + subsetting,
+                lpparam.classLoader).getDeclaredMethods()) {
+            if (!method.getName().equals("onCreate") || method.getReturnType() != void.class) continue;
             XposedBridge.hookMethod(method, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
