@@ -1,2 +1,3 @@
 -keepattributes SourceFile,LineNumberTable
 -dontobfuscate
+-keep class be.mygod.oplus.batterywaster.BatteryWaster
