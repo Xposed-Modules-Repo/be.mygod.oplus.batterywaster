@@ -65,8 +65,8 @@ public class BatteryWaster implements IXposedHookLoadPackage {
                     log.append(Arrays.deepToString(param.args));
                     log.append(") denied\n");
                     var stack = Thread.currentThread().getStackTrace();
-                    for (StackTraceElement element : stack) {
-                        log.append(element.toString());
+                    for (int i = 3; i < stack.length; i++) {
+                        log.append(stack[i].toString());
                         log.append('\n');
                     }
                     XposedBridge.log(log.toString());
