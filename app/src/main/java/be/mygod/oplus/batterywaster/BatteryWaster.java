@@ -9,6 +9,7 @@ import org.xmlpull.v1.XmlPullParser;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
@@ -75,6 +76,7 @@ public class BatteryWaster implements IXposedHookLoadPackage {
                 param.setResult(null);
             }
         };
+        var foundMethods = new HashSet<String>();
         for (var method : XposedHelpers.findClass(
                 "com.android.server.notification.OplusNotificationManagerServiceExtImpl",
                 lpparam.classLoader).getDeclaredMethods()) switch (method.getName()) {
@@ -82,8 +84,10 @@ public class BatteryWaster implements IXposedHookLoadPackage {
             case "cancelAllNotificationsInt":
             case "onClearAllNotifications":
                 XposedBridge.hookMethod(method, logOffender);
+                foundMethods.add(method.getName());
                 break;
         }
+        if (foundMethods.size() < 3) throw new NoSuchMethodError(foundMethods.toString());
 
         XposedBridge.hookMethod(NotificationChannel.class.getDeclaredMethod(
                 "isImportanceLockedByCriticalDeviceFunction"), new XC_MethodHook() {
