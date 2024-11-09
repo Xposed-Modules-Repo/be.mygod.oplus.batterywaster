@@ -57,22 +57,9 @@ public class BatteryWaster implements IXposedHookLoadPackage {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 var pid = Binder.getCallingPid();
-                if (Process.myPid() == pid) {
-                    var log = new StringBuilder();
-                    log.append("Dangerous method ");
-                    log.append(param.method.getName());
-                    log.append("(");
-                    log.append(Arrays.deepToString(param.args));
-                    log.append(") denied\n");
-                    var stack = Thread.currentThread().getStackTrace();
-                    for (int i = 3; i < stack.length; i++) {
-                        log.append(stack[i].toString());
-                        log.append('\n');
-                    }
-                    XposedBridge.log(log.toString());
-                } else XposedBridge.log(String.format(Locale.ENGLISH,
-                        "Dangerous method %s(%s) denied from uid=%d, pid=%d", param.method.getName(),
-                        Arrays.deepToString(param.args), Binder.getCallingUid(), pid));
+                if (Process.myPid() == pid) return;
+                XposedBridge.log(String.format(Locale.ENGLISH, "Dangerous method %s(%s) denied from uid=%d, pid=%d",
+                        param.method.getName(), Arrays.deepToString(param.args), Binder.getCallingUid(), pid));
                 param.setResult(null);
             }
         };
