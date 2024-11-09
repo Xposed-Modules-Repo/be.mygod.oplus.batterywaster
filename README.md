@@ -13,6 +13,7 @@ File a PR if anything is not working.
 
 * `android`:
   - Allow background app startup (by e.g. FCM) in game mode.
+    (Fixes `no response to broadcast from` errors.)
   - Prevent unnecessary notification removals.
   - Patch permissionless dangerous system service calls.
 * `com.android.settings`:
