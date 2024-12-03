@@ -6,7 +6,7 @@
 
 Disable OnePlus battery saving features that hurt user experience (Android 13+).
 
-Only tested on OxygenOS 14.
+Only tested on OxygenOS 14/15.
 File a PR if anything is not working.
 
 ## List of patches included
@@ -20,5 +20,7 @@ File a PR if anything is not working.
   - Restore AOSP notification settings.
   - Allow disabling/modifying useless notifications (e.g. battery alerts).
     Also requires patching `android`.
+* `com.android.systemui`:
+  - (OxygenOS 15) Disable swipe down notification to open floating window.
 * `com.oplus.battery`:
   - Disable all poorly-implemented thermal control features.

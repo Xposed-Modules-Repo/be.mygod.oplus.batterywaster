@@ -2,7 +2,10 @@ package be.mygod.oplus.batterywaster;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Process;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -27,6 +30,9 @@ public class BatteryWaster implements IXposedHookLoadPackage {
                 break;
             case "com.android.settings":
                 handleAndroidSettings(lpparam);
+                break;
+            case "com.android.systemui":
+                handleSystemui(lpparam);
                 break;
             case "com.oplus.battery":
                 handleOplusBattery(lpparam);
@@ -81,6 +87,17 @@ public class BatteryWaster implements IXposedHookLoadPackage {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
                 param.setResult(false);
+            }
+        });
+    }
+
+    private void handleSystemui(XC_LoadPackage.LoadPackageParam lpparam) {
+        if (Build.VERSION.SDK_INT < 35) return;
+        XposedHelpers.findAndHookMethod("com.android.systemui.util.HeadsUpToZoomUtils", lpparam.classLoader,
+                "calculateFlexibleWindowBounds", Intent.class, Context.class, int.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                param.setResult(null);
             }
         });
     }

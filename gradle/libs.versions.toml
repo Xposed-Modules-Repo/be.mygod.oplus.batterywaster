@@ -5,4 +5,4 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version = "1.2.1
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version = "3.6.1" }
 
 [plugins]
-android-application = { id = "com.android.application", version = "8.7.2" }
+android-application = { id = "com.android.application", version = "8.7.3" }
